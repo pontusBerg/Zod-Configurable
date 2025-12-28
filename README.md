@@ -1,73 +1,210 @@
-# React + TypeScript + Vite
+# Zod Production
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Enhanced Zod validation service with configurable error logging and parsing
 
-Currently, two official plugins are available:
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Zod](https://img.shields.io/badge/Zod-4.2-blue.svg)](https://zod.dev/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+A production-ready wrapper around [Zod](https://zod.dev/) that provides enhanced error logging and configurable parsing behavior. Perfect for applications that need fine-grained control over validation and error reporting.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🎯 **Configurable Parsing**: Enable or disable validation parsing at runtime
+- 📝 **Enhanced Error Logging**: Beautiful, styled console output for Zod validation errors
+- 🔒 **Type-Safe**: Full TypeScript support with proper type inference
+- ⚡ **Zero Dependencies**: Only depends on Zod itself
+- 🧪 **Well Tested**: Comprehensive test coverage
+- 🎨 **Developer Experience**: Clear, readable error messages with issue details
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install zod-production
+# or
+pnpm add zod-production
+# or
+yarn add zod-production
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Quick Start
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```typescript
+import { ZodService } from 'zod-production';
+import { z } from 'zod';
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+// Create a service instance
+const zodService = new ZodService({
+  isParsingEnabled: true,
+  shouldLogErrors: true
+});
+
+// Define your schema
+const userSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  age: z.number().min(18)
+});
+
+// Parse with automatic error logging
+try {
+  const user = zodService.parse(userSchema, {
+    name: "John",
+    email: "john@example.com",
+    age: 25
+  });
+  console.log(user); // { name: "John", email: "john@example.com", age: 25 }
+} catch (error) {
+  // Error is automatically logged with styled formatting
+  // Handle error as needed
+}
+
+// Or use safeParse for error handling without exceptions
+const result = zodService.safeParse(userSchema, invalidData);
+if (result.success) {
+  console.log(result.data);
+} else {
+  console.error(result.error);
+}
 ```
+
+## API Reference
+
+### `ZodService`
+
+The main service class for Zod validation with enhanced error handling.
+
+#### Constructor
+
+```typescript
+new ZodService(config: ZodServiceConfig)
+```
+
+**Config Options:**
+
+- `isParsingEnabled` (boolean): When `false`, skips validation and returns data as-is (use with caution)
+- `shouldLogErrors` (boolean): When `true`, automatically logs validation errors with styled formatting
+
+#### Methods
+
+##### `parse<T>(schema: T, data: unknown): z.infer<T>`
+
+Parses data against a Zod schema and throws if validation fails.
+
+```typescript
+const user = zodService.parse(userSchema, userData);
+```
+
+##### `safeParse<T>(schema: T, data: unknown): { success: true; data: z.infer<T> } | { success: false; error: ZodError }`
+
+Safely parses data against a Zod schema without throwing.
+
+```typescript
+const result = zodService.safeParse(userSchema, userData);
+if (result.success) {
+  console.log(result.data);
+} else {
+  console.error(result.error);
+}
+```
+
+### `logZodError(error: ZodError): void`
+
+Utility function to log Zod errors with enhanced formatting. Automatically called by `ZodService` when `shouldLogErrors` is `true`.
+
+```typescript
+import { logZodError } from 'zod-production';
+
+try {
+  schema.parse(data);
+} catch (error) {
+  if (error instanceof ZodError) {
+    logZodError(error);
+  }
+}
+```
+
+## Use Cases
+
+### Development Mode
+
+Enable detailed error logging during development:
+
+```typescript
+const zodService = new ZodService({
+  isParsingEnabled: true,
+  shouldLogErrors: process.env.NODE_ENV === 'development'
+});
+```
+
+### Production Mode
+
+Disable logging in production for performance:
+
+```typescript
+const zodService = new ZodService({
+  isParsingEnabled: true,
+  shouldLogErrors: false
+});
+```
+
+### Feature Flags
+
+Conditionally enable/disable validation:
+
+```typescript
+const zodService = new ZodService({
+  isParsingEnabled: featureFlags.enableValidation,
+  shouldLogErrors: true
+});
+```
+
+## Error Logging
+
+When `shouldLogErrors` is enabled, validation errors are logged with:
+
+- 🎨 Styled console output with colors
+- 📍 Clear path indicators for nested errors
+- 📋 Detailed issue information (code, expected, received, message)
+- 🔍 Collapsible error groups for better readability
+
+Example error output:
+```
+❌ Zod Validation Error
+Message: Validation failed
+Issues:
+  [1] name
+     Code: invalid_type
+     Expected: string
+     Received: number
+     Message: Expected string, received number
+```
+
+## Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run linting
+npm run lint
+
+# Type checking
+npm run type-check
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [Zod](https://zod.dev/) - TypeScript-first schema validation
+- Inspired by the need for better error handling in production applications
