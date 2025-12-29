@@ -120,4 +120,7 @@ describe("Better Error Handling", () => {
         // Clean up the spy
         logSpy.mockRestore()
     })
+
+
+
 })

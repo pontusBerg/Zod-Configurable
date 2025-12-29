@@ -37,7 +37,6 @@ export class ZodService {
             if (this.isParsingEnabled) {
                 throw error;
             }
-
             // Type assertion when parsing is disabled - use with caution
             return data as z.infer<T>;
         }
