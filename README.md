@@ -14,7 +14,6 @@ A production-ready wrapper around [Zod](https://zod.dev/) that provides enhanced
 - 📝 **Enhanced Error Logging**: Beautiful, styled console output for Zod validation errors
 - 🔒 **Type-Safe**: Full TypeScript support with proper type inference
 - ⚡ **Zero Dependencies**: Only depends on Zod itself
-- 🧪 **Well Tested**: Comprehensive test coverage
 - 🎨 **Developer Experience**: Clear, readable error messages with issue details
 
 ## Installation
