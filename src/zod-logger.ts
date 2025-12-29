@@ -2,12 +2,16 @@ import { ZodError } from "zod";
 
 /**
  * Logs Zod validation errors to the console with styled formatting
+ * @param error - The ZodError to log
+ * @param isSilenced - Whether this error is silenced (logged but not shown to user)
  */
-export const logZodError = (error: ZodError): void => {
+export const logZodError = (error: ZodError, isSilenced: boolean = false): void => {
     // Main error header with styling
+    const headerText = isSilenced ? "🔇 Silenced Zod Validation Error" : "❌ Zod Validation Error";
+    const headerColor = isSilenced ? "#ffaa44" : "#ff4444";
     console.groupCollapsed(
-        "%c❌ Zod Validation Error",
-        "color: #ff4444; font-weight: bold; font-size: 14px;"
+        `%c${headerText}`,
+        `color: ${headerColor}; font-weight: bold; font-size: 14px;`
     );
 
     // Error message
